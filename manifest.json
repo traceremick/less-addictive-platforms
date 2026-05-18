@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "Less Addictive Platforms",
+  "version": "1.0",
+  "description": "Strips engagement and dopamine traps from sites to make them less addictive and more productive.",
+  "permissions": ["activeTab", "clipboardWrite"],
+  "content_scripts": [
+    {
+      "matches": ["*://*.duckduckgo.com/*"],
+      "js": ["duckduckgo-content.js"]
+    },
+    {
+      "matches": ["*://*.youtube.com/*"],
+      "js": ["youtube-content.js"]
+    },
+    {
+      "matches": ["*://*.twitch.tv/*"],
+      "js": ["twitchtv-content.js"]
+    }
+  ]
+}
