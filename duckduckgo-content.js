@@ -1,6 +1,5 @@
 (function() {
   function init() {
-    console.log('ddg-content.js loaded');
     document.querySelectorAll('li[data-layout="ad"]').forEach(ad => {
       ad.style = "border:0;background:#fff8e1;padding:8px;margin:6px 0;border-radius:8px";
       const badge = ad.querySelector('button[data-testid^="ad-badge-ad-tooltip"]');

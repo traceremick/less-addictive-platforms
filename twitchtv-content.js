@@ -19,8 +19,7 @@
     .onsite-notifications,
     div[aria-label="Live Channels"].side-nav-section,
     div[aria-label="Recommended Categories"].side-nav-section,
-    div[aria-label$="Viewers Also Watch"].side-nav-section,
-    .tw-avatar {
+    div[aria-label$="Viewers Also Watch"].side-nav-section {
       display: none !important;
     }
 
