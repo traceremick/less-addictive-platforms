@@ -19,7 +19,8 @@
     .onsite-notifications,
     div[aria-label="Live Channels"].side-nav-section,
     div[aria-label="Recommended Categories"].side-nav-section,
-    div[aria-label$="Viewers Also Watch"].side-nav-section {
+    div[aria-label$="Viewers Also Watch"].side-nav-section,
+    a[data-test-selector="followed-channel"] div:has(> p[title^="Watch Streak"]) {
       display: none !important;
     }
 
@@ -286,6 +287,20 @@
     document.body.appendChild(btn);
   }
 
+  function cleanTitle() {
+    const cleaned = document.title.replace(/^\s*\(\d+\)\s*/, '');
+    if (cleaned !== document.title) document.title = cleaned;
+  }
+
+  function watchTitle() {
+    cleanTitle();
+    if (typeof MutationObserver === 'undefined') return;
+    const title_el = document.querySelector('title');
+    if (! title_el) return;
+    const observer = new MutationObserver(cleanTitle);
+    observer.observe(title_el, { childList: true, characterData: true, subtree: true });
+  }
+
   function getChannelFromUrl() {
     const path = window.location.pathname.replace(/^\/+|\/+$/g, '');
     if (! path) return null;
@@ -481,6 +496,7 @@
 
   function tick() {
     try {
+      cleanTitle();
       scrapeFollowedChannels();
       evaluate();
       manageChatToggle();
@@ -496,6 +512,7 @@
       return;
     }
     applyChatVisibility();
+    watchTitle();
     tick();
     setInterval(tick, 500);
   }
