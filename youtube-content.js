@@ -11,14 +11,12 @@
       display: inline-block;
     }
 
-    .normalize-youtube-blur:hover {
+    .normalize-youtube-blur.normalize-youtube-reveal {
       filter: none;
     }
-
-    .ytContentMetadataViewModelDelimiter {
-      display: none !important;
-    }
   `;
+
+  const groups = new WeakMap();
 
   function injectStyles() {
     if (document.getElementById('normalize-youtube-styles')) return;
@@ -28,25 +26,53 @@
     (document.head || document.documentElement).appendChild(style);
   }
 
-  function blurNode(node) {
-    if (node && ! node.classList.contains('normalize-youtube-blur')) {
-      node.classList.add('normalize-youtube-blur');
+  function getGroup(container) {
+    let members = groups.get(container);
+    if (! members) {
+      members = new Set();
+      groups.set(container, members);
     }
+    return members;
+  }
+
+  function revealGroup(members, reveal) {
+    members.forEach(member => {
+      if (member.isConnected) member.classList.toggle('normalize-youtube-reveal', reveal);
+    });
+  }
+
+  function blurNode(node, container) {
+    if (! node || node.classList.contains('normalize-youtube-blur')) return;
+    node.classList.add('normalize-youtube-blur');
+
+    const members = getGroup(container || node);
+    members.add(node);
+    node.addEventListener('mouseenter', () => revealGroup(members, true));
+    node.addEventListener('mouseleave', () => revealGroup(members, false));
   }
 
   function blurMetadata() {
-    document.querySelectorAll('ytd-watch-info-text #view-count, ytd-watch-info-text #date-text').forEach(blurNode);
+    document.querySelectorAll('ytd-watch-info-text #view-count, ytd-watch-info-text #date-text').forEach(node => {
+      blurNode(node, node.closest('ytd-watch-info-text'));
+    });
 
     document.querySelectorAll('yt-formatted-string#info > span').forEach(span => {
-      if (blur_text_pattern.test(span.textContent)) blurNode(span);
+      if (blur_text_pattern.test(span.textContent)) blurNode(span, span.closest('yt-formatted-string#info'));
     });
 
     document.querySelectorAll('.ytContentMetadataViewModelMetadataRow .ytContentMetadataViewModelMetadataText').forEach(span => {
-      if (blur_text_pattern.test(span.textContent)) blurNode(span);
+      if (blur_text_pattern.test(span.textContent)) blurNode(span, span.closest('.ytContentMetadataViewModel') || span.closest('.ytContentMetadataViewModelMetadataRow'));
+    });
+
+    document.querySelectorAll('.ytContentMetadataViewModelMetadataRow .ytContentMetadataViewModelDelimiter').forEach(delimiter => {
+      const prev = delimiter.previousElementSibling;
+      const next = delimiter.nextElementSibling;
+      const between_blurred = (prev && prev.classList.contains('normalize-youtube-blur')) && (next && next.classList.contains('normalize-youtube-blur'));
+      if (between_blurred) blurNode(delimiter, delimiter.closest('.ytContentMetadataViewModel') || delimiter.closest('.ytContentMetadataViewModelMetadataRow'));
     });
 
     document.querySelectorAll('#metadata-line span.inline-metadata-item').forEach(span => {
-      if (blur_text_pattern.test(span.textContent)) blurNode(span);
+      if (blur_text_pattern.test(span.textContent)) blurNode(span, span.closest('#metadata-line'));
     });
   }
 
