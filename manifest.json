@@ -16,6 +16,20 @@
     {
       "matches": ["*://*.twitch.tv/*"],
       "js": ["twitchtv-content.js"]
+    },
+    {
+      "matches": ["*://*.google.com/*"],
+      "js": ["google-content.js"]
+    },
+    {
+      "matches": ["*://*.nytimes.com/*"],
+      "js": ["nyt-content.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["*://x.com/*", "*://www.x.com/*", "*://twitter.com/*", "*://www.twitter.com/*", "*://mobile.twitter.com/*"],
+      "js": ["x-content.js"],
+      "run_at": "document_start"
     }
   ]
 }
