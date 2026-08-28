@@ -25,16 +25,6 @@
       "matches": ["*://*.nytimes.com/*"],
       "js": ["nyt-content.js"],
       "run_at": "document_start"
-    },
-    {
-      "matches": ["*://x.com/*", "*://www.x.com/*", "*://twitter.com/*", "*://www.twitter.com/*", "*://mobile.twitter.com/*"],
-      "js": ["x-content.js"],
-      "run_at": "document_start"
-    },
-    {
-      "matches": ["*://xcancel.com/*", "*://*.xcancel.com/*"],
-      "js": ["xcancel-content.js"],
-      "run_at": "document_start"
     }
   ]
 }
