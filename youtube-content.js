@@ -1,7 +1,7 @@
 (function () {
   const shorts_pattern = /^\/shorts\/([A-Za-z0-9_-]+)/;
 
-  const blur_text_pattern = /(view|watching|\bago\b|streamed|premiered)/i;
+  const blur_text_pattern = /(view|watching|\bago\b|streamed|premiered|subscriber)/i;
 
   const css = `
     .normalize-youtube-blur {
@@ -12,6 +12,10 @@
     }
 
     .normalize-youtube-blur.normalize-youtube-reveal {
+      filter: none;
+    }
+
+    html.normalize-youtube-reveal-all .normalize-youtube-blur {
       filter: none;
     }
 
@@ -97,6 +101,23 @@
     document.querySelectorAll('#metadata-line span.inline-metadata-item').forEach(span => {
       if (blur_text_pattern.test(span.textContent)) blurNode(span, span.closest('#metadata-line'));
     });
+
+    document.querySelectorAll('#owner-sub-count, #subscriber-count').forEach(node => {
+      blurNode(node, node);
+    });
+  }
+
+  function revealAll(reveal) {
+    document.documentElement.classList.toggle('normalize-youtube-reveal-all', reveal);
+  }
+
+  function bindSearchReveal() {
+    document.querySelectorAll('textarea[name="search_query"], input[name="search_query"]').forEach(input => {
+      if (input.dataset.normalizeSearchReveal) return;
+      input.dataset.normalizeSearchReveal = '1';
+      input.addEventListener('mouseenter', () => revealAll(true));
+      input.addEventListener('mouseleave', () => revealAll(false));
+    });
   }
 
   function isWatchLater() {
@@ -165,6 +186,7 @@
     redirectPlaylist();
     blurMetadata();
     deferThumbnails();
+    bindSearchReveal();
   }
 
   init();
@@ -178,6 +200,7 @@
     }
     blurMetadata();
     deferThumbnails();
+    bindSearchReveal();
   });
 
   observer.observe(document, { childList: true, subtree: true });
@@ -185,5 +208,6 @@
   setInterval(function () {
     blurMetadata();
     deferThumbnails();
+    bindSearchReveal();
   }, 1000);
 })();
