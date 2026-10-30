@@ -3,7 +3,19 @@
   const SESSION_ALLOW_KEY = 'normalize_twitch_session_allowed';
   const CHAT_HIDDEN_KEY = 'normalize_twitch_chat_hidden';
 
-  try { sessionStorage.removeItem(SESSION_ALLOW_KEY); } catch (e) {}
+  const features = {
+    hide_view_counts: false,
+    hide_watch_streaks: true,
+    hide_for_you: true,
+    hide_sidebar_sections: true,
+    hide_sidebar_channels: true,
+    blur_live_time: false,
+    hide_chat: true,
+    clean_title: true,
+    block_unfollowed_channels: false,
+  };
+
+  try { sessionStorage.removeItem(SESSION_ALLOW_KEY); } catch (e) { }
 
   const reserved_paths = new Set([
     '', 'directory', 'p', 'search', 'settings', 'wallet', 'inventory',
@@ -15,30 +27,52 @@
     'friends-list',
   ]);
 
-  const css = `
-    .onsite-notifications,
-    div[aria-label="Live Channels"].side-nav-section,
-    div[aria-label="Recommended Categories"].side-nav-section,
-    div[aria-label$="Viewers Also Watch"].side-nav-section,
-    a[data-test-selector="followed-channel"] div:has(> p[title^="Watch Streak"]) {
-      display: none !important;
-    }
+  const hidden_sidebar_channels = ['theo', 'lacy'];
 
-    [data-a-target="animated-channel-viewers-count"],
-    .live-time,
-    [data-a-target="side-nav-live-status"] span[aria-hidden="true"] {
-      filter: blur(6px);
-      transition: filter 0.15s ease;
-      cursor: pointer;
-      display: inline-block;
-    }
+  const hidden_selectors = [];
+  if (features.hide_sidebar_channels) {
+    hidden_sidebar_channels.forEach(name => {
+      const href = '[href="/' + name.toLowerCase() + '" i]';
+      hidden_selectors.push(
+        '#side-nav .side-nav-card:has(a' + href + ')',
+        '#side-nav a' + href
+      );
+    });
+  }
+  if (features.hide_sidebar_sections) {
+    hidden_selectors.push(
+      '.onsite-notifications',
+      'div[aria-label="Live Channels"].side-nav-section',
+      'div[aria-label="Recommended Categories"].side-nav-section',
+      'div[aria-label$="Viewers Also Watch"].side-nav-section'
+    );
+  }
+  if (features.hide_watch_streaks) {
+    hidden_selectors.push('a[data-test-selector="followed-channel"] div:has(> p[title^="Watch Streak"])');
+  }
 
-    [data-a-target="animated-channel-viewers-count"]:hover,
-    .live-time:hover,
-    [data-a-target="side-nav-live-status"] span[aria-hidden="true"]:hover {
-      filter: none;
-    }
+  if (features.hide_for_you) {
+    hidden_selectors.push('div[role="group"][aria-label="Watch Streaks at risk"]');
+  }
 
+  const blurred_selectors = [];
+  if (features.hide_view_counts) {
+    blurred_selectors.push(
+      '[data-a-target="animated-channel-viewers-count"]',
+      '[data-a-target="side-nav-live-status"] span[aria-hidden="true"]'
+    );
+  }
+  if (features.blur_live_time) {
+    blurred_selectors.push('.live-time');
+  }
+
+  const hidden_css = hidden_selectors.length ? hidden_selectors.join(',') + ' { display: none !important; }' : '';
+  const blurred_css = blurred_selectors.length
+    ? blurred_selectors.join(',') + ' { filter: blur(6px); transition: filter 0.15s ease; cursor: pointer; display: inline-block; }' +
+      blurred_selectors.map(s => s + ':hover').join(',') + ' { filter: none; }'
+    : '';
+
+  const css = hidden_css + blurred_css + `
     body.normalize-twitch-chat-hidden #live-page-chat {
       display: none !important;
     }
@@ -494,12 +528,23 @@
     showBlockOverlay(channel);
   }
 
+  function _hideForYouTitle() {
+    document.querySelectorAll('.side-nav__title h3').forEach(h3 => {
+      if (h3.textContent.trim() !== 'For You') return;
+      const title = h3.closest('.side-nav__title');
+      if (title) title.style.setProperty('display', 'none', 'important');
+    });
+  }
+
   function tick() {
     try {
-      cleanTitle();
-      scrapeFollowedChannels();
-      evaluate();
-      manageChatToggle();
+      if (features.hide_for_you) _hideForYouTitle();
+      if (features.clean_title) cleanTitle();
+      if (features.block_unfollowed_channels) {
+        scrapeFollowedChannels();
+        evaluate();
+      }
+      if (features.hide_chat) manageChatToggle();
     } catch (e) {
       console.error('normalize-twitch error', e);
     }
@@ -511,8 +556,8 @@
       requestAnimationFrame(init);
       return;
     }
-    applyChatVisibility();
-    watchTitle();
+    if (features.hide_chat) applyChatVisibility();
+    if (features.clean_title) watchTitle();
     tick();
     setInterval(tick, 500);
   }

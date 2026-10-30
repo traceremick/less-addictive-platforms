@@ -10,21 +10,27 @@
       "js": ["duckduckgo-content.js"]
     },
     {
-      "matches": ["*://*.youtube.com/*"],
-      "js": ["youtube-content.js"]
+      "matches": ["*://*.google.com/*"],
+      "js": ["google-content.js"]
     },
     {
       "matches": ["*://*.twitch.tv/*"],
       "js": ["twitchtv-content.js"]
     },
     {
-      "matches": ["*://*.google.com/*"],
-      "js": ["google-content.js"]
-    },
-    {
       "matches": ["*://*.nytimes.com/*"],
       "js": ["nyt-content.js"],
       "run_at": "document_start"
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["timeout-content.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["level-line-content.js"],
+      "all_frames": true
     }
   ]
 }
